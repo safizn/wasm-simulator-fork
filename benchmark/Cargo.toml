@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 runtime = { path = "../runtime"}
+wasmer = "2.0.0"
