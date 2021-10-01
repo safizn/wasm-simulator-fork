@@ -4,5 +4,6 @@ members = [
     "benchmark",
     "runtime",
     "simulator",
-    "testModule"
+    "testModule",
+    "loop_test_module"
 ]

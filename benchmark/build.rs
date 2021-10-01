@@ -7,7 +7,8 @@ const WASM_UNKNOWN: &str = "wasm32-unknown-unknown";
 fn main(){
 
     println!("cargo:rerun-if-changed=testModule/*");
-    let modules = vec!["testModule"];
+    println!("cargo:rerun-if-changed=loop_test_module/*");
+    let modules = vec!["testModule", "loop_test_module"];
 
 
 
