@@ -12,5 +12,6 @@ pub fn multiply_many_times(x: i32, y :i32, times: i32) -> i32{
     for _i in 1..times{
         result = x * y
     }
+
     result
 }

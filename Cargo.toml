@@ -5,5 +5,7 @@ members = [
     "runtime",
     "simulator",
     "testModule",
-    "loop_test_module"
+    "loop_test_module",
+    "struct_addition",
+    "benchmark_shared_data_structures"
 ]

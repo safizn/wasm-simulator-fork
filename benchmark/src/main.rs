@@ -1,11 +1,7 @@
 use std::path::Path;
-use wasmer::{
-    Store,
-    Module,
-    Instance,
-    imports,
-    Value
-};
+use wasmer::{Store, Module, Instance, imports, Value, Val};
+use wasmer::wasmparser::Type::I32;
+use benchmark_shared_data_structures::MultiplyParams;
 
 fn main() {
     println!("Hello, world!");
@@ -37,6 +33,13 @@ fn main() {
 
     let multiply_many_times =instance.exports.get_function("multiply_many_times").expect("Failed to find method: multiply");
 
+    let path = Path::new("./modules/wasm32-unknown-unknown/debug/struct_addition.wasm");
+    let module = Module::from_file(&store,path).expect("Module Not Found");
+
+    // Prepare environment with imports
+    let import_objects = imports!{};
+    // Create new sandbox
+    let struct_add_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
 
     let runs = 100;
@@ -114,6 +117,64 @@ fn main() {
         end-start
     };
 
-    println!("Multiply Many times: {}",many_times.as_secs_f32())
+    println!("Multiply Many times: {}",many_times.as_secs_f32());
 
+    let duration  = {
+        let start = std::time::Instant::now();
+        let params = MultiplyParams {
+            x : 2,
+            y : 3
+        };
+        for i in 0..100_000{
+            call_add_test(&params, &struct_add_instance)
+        }
+        let end = std::time::Instant::now();
+        end-start
+    };
+    println!("Struct addition: {}",duration.as_secs_f32());
+
+}
+
+fn call_add_test(params : &MultiplyParams, instance : &Instance ){
+    let buffer_size = bincode::serialized_size(params).expect("Could not calculate buffer size") as i32;
+
+    let prepare_buffer_fuc = instance
+        .exports
+        .get_function("wasm_prepare_buffer")
+        .expect("No such function");
+
+    let result = prepare_buffer_fuc.call(&[Value::I32(buffer_size)]).expect("Function call failed");
+
+    let compressed_nums = result[0].i64().expect("Was not i64");
+
+    let (ptr, len) = split_i64_to_i32(compressed_nums);
+
+    let mem = instance.exports.get_memory("memory").expect("Could not get memory");
+    let mem_array: &mut [u8];
+    let serialized_array = bincode::serialize(params).expect("Failed to serialize");
+    unsafe {
+        mem_array = mem.data_unchecked_mut(); // Set base address to memory
+        for i in 0..len {
+            // iterate over the serialized struct, copying it to the memory of the target module,
+            // using the ptr provided by prepare_buffer
+            mem_array[ptr as usize + i as usize] = serialized_array[i as usize];
+        }
+    }
+
+    // Now, call the method
+    let struct_add = instance
+        .exports
+        .get_function("struct_add")
+        .expect("Could not find function struct_add");
+
+    let result = struct_add.call(&[Value::I32(ptr),Value::I32(len)])
+        .expect("Function call failed");
+
+    assert_eq!(result[0].i32().expect("Was not i32"), params.x * params.y);
+
+}
+
+/// Split one i64 into two i32
+fn split_i64_to_i32( r: i64)->(i32,i32){
+    ( (((r as u64) & 0xffffffff00000000) >> 32) as i32 , ((r as u64) & 0x00000000ffffffff) as i32)
 }
