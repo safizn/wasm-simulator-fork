@@ -7,5 +7,7 @@ members = [
     "testModule",
     "loop_test_module",
     "struct_addition",
-    "benchmark_shared_data_structures"
+    "benchmark_shared_data_structures",
+    "packed_i32",
+    "simulator_shared_types"
 ]
