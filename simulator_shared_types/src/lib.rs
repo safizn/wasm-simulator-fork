@@ -1,12 +1,8 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
 
-pub struct CacheEvent<T> {
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct CacheEvent<T : Serialize + Deserialize> {
     label: T,
     size : i32
 }
