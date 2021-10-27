@@ -1,5 +1,5 @@
 [package]
-name = "wasm_fifo"
+name = "wasm_bincode_fifo"
 version = "0.1.0"
 edition = "2018"
 

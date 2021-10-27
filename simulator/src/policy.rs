@@ -1,5 +1,4 @@
 use wasmer::{Store, Module, Instance, imports, Value, Val, Function};
-use std::pin::Pin;
 use simulator_shared_types::CacheEvent;
 
 pub struct WasmStructPolicy{
@@ -29,9 +28,9 @@ impl WasmStructPolicy {
         // Create new sandbox
         let module = Instance::new(&module, &import_objects).unwrap();
 
-        let alloc = module.exports.get_function("alloc").unwrap();
-        let send = module.exports.get_function("send").unwrap();
-        let init = module.exports.get_function("init").unwrap();
+        let _alloc = module.exports.get_function("alloc").unwrap();
+        let _send = module.exports.get_function("send").unwrap();
+        let _init = module.exports.get_function("init").unwrap();
 
 
 
@@ -50,8 +49,8 @@ impl WasmPairPolicy {
         let import_objects = imports!{};
         // Create new sandbox
         let module = Instance::new(&module, &import_objects).unwrap();
-        let send = module.exports.get_function("send").unwrap();
-        let init = module.exports.get_function("init").unwrap();
+        let _send = module.exports.get_function("send").unwrap();
+        let _init = module.exports.get_function("init").unwrap();
 
         let out = WasmPairPolicy {
             module

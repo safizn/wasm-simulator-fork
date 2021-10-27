@@ -8,7 +8,10 @@ fn main(){
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=simulator_shared_types/*");
 
-    let modules = vec!["sim_modules/wasm/wasm_fifo", "sim_modules/wasm_c_struct/wasm_c_fifo"];
+    let modules = vec![
+        "sim_modules/wasm_bincode/wasm_bincode_fifo", "sim_modules/wasm_c_struct/wasm_c_fifo","sim_modules/wasm_pair/wasm_pair_fifo",
+
+    ];
 
     for module in &modules {
         println!("cargo:rerun-if-changed={}/*",module);
@@ -18,7 +21,7 @@ fn main(){
 
     for module in modules {
         let _result = Command::new("cargo")
-            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../modules"])
+            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../../../modules"])
             .current_dir(format!("../{}",module))
             .status()
             .expect(format!("Compilation Failed for wasm module:{}",module).as_str());

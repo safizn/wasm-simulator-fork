@@ -10,7 +10,7 @@ fn main(){
     println!("cargo:rerun-if-changed=benchmark_shared_data_structures/*");
     let modules = vec!["testModule", "loop_test_module","struct_addition"];
 
-    for module in modules {
+    for module in &modules {
         println!("cargo:rerun-if-changed={}/*",module);
     }
 
@@ -19,7 +19,7 @@ fn main(){
             .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../modules"])
             .current_dir(format!("../{}",module))
             .status()
-            .expect(format!("Compilation Failed for wasm module:{}",module).as_str());
+            .expect(format!("Compilation Failed for wasm_bincode module:{}",module).as_str());
         // TODO copy file to output
     }
 }

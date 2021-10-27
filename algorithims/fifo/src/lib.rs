@@ -1,3 +1,6 @@
+
+use simulator_shared_types::CacheEvent;
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -7,15 +10,15 @@ mod tests {
 }
 
 pub struct FiFo<T> {
-
+    cache : Vec<CacheEvent<T>>
 }
 
-impl FiFo<T> {
-    pub fn initialize(cache_size : i32) {
+impl <T> FiFo<T> {
+    pub fn initialize(_cache_size : i32) {
 
     }
 
-    pub fn send() {
+    pub fn send(_event : CacheEvent<T>) {
 
     }
 }

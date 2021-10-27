@@ -11,6 +11,7 @@ members = [
     "shared_crates/packed_i32",
     "simulator_shared_types",
     "algorithims/fifo",
-    "sim_modules/wasm/wasm_fifo",
-    "sim_modules/wasm_c_struct/wasm_c_fifo"
+    "sim_modules/wasm_bincode/wasm_bincode_fifo",
+    "sim_modules/wasm_c_struct/wasm_c_fifo",
+    "sim_modules/wasm_pair/wasm_pair_fifo"
 ]

@@ -64,6 +64,7 @@ version = "0.1.0"
 dependencies = [
  "benchmark_shared_data_structures",
  "bincode",
+ "packed_i32",
  "runtime",
  "wasmer",
 ]
@@ -1062,6 +1063,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0237232789cf037d5480773fe568aac745bfe2afbc11a863e97901780a6b47cc"
 
 [[package]]
+name = "wasm_bincode_fifo"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "console_error_panic_hook",
+ "fifo",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
 name = "wasm_c_fifo"
 version = "0.1.0"
 dependencies = [
@@ -1072,10 +1084,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm_fifo"
+name = "wasm_pair_fifo"
 version = "0.1.0"
 dependencies = [
- "bincode",
  "console_error_panic_hook",
  "fifo",
  "packed_i32",

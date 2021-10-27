@@ -12,7 +12,7 @@ fn main() {
 
     let store = Store::default();
     println!("{:?}",std::env::current_dir());
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/testModule.wasm");
+    let path = Path::new("./modules/wasm32-unknown-unknown/debug/testModule.wasm_bincode");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -23,7 +23,7 @@ fn main() {
     let multiply = instance.exports.get_function("multiply").expect("Failed to find method: multiply");
 
 
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/loop_test_module.wasm");
+    let path = Path::new("./modules/wasm32-unknown-unknown/debug/loop_test_module.wasm_bincode");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -33,7 +33,7 @@ fn main() {
 
     let multiply_many_times =instance.exports.get_function("multiply_many_times").expect("Failed to find method: multiply");
 
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/struct_addition.wasm");
+    let path = Path::new("./modules/wasm32-unknown-unknown/debug/struct_addition.wasm_bincode");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -147,7 +147,7 @@ fn call_add_test(params : &MultiplyParams, instance : &Instance ){
 
     let compressed_nums = result[0].i64().expect("Was not i64");
 
-    let (ptr, len) = split_i64_to_i32(compressed_nums);
+    let (ptr, len) = packed_i32::split_i64_to_i32(compressed_nums);
 
     let mem = instance.exports.get_memory("memory").expect("Could not get memory");
     let mem_array: &mut [u8];

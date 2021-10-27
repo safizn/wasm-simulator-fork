@@ -52,6 +52,8 @@ fn main() {
         }
     ).collect();
 
+    let module_names = vec!["wasm_bincode_fifo","wasm_c_fifo","wasm_pair_fifo"];
+
     println!("Data: {:?}", data)
 
 

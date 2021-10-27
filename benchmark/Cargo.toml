@@ -10,3 +10,4 @@ runtime = { path = "../runtime"}
 benchmark_shared_data_structures = { path = "../benchmark_shared_data_structures"}
 wasmer = "2.0.0"
 bincode = "1.3.3"
+packed_i32 = {path = "../shared_crates/packed_i32"}
