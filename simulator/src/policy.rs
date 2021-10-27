@@ -1,5 +1,5 @@
 use wasmer::{Store, Module, Instance, imports, Value, Val, Function};
-use simulator_shared_types::CacheEvent;
+use simulator_shared_types::FileRecord;
 
 pub struct WasmStructPolicy{
     module : Instance
@@ -11,9 +11,11 @@ pub struct WasmPairPolicy{
 
 pub trait Policy<T> {
 
-    fn initialize(&self, cache_size : i32);
+    fn initialize(&mut self, cache_size : i32);
 
-    fn send_request(&self, pair : CacheEvent<T>);
+    fn send_request(&mut self, pair : FileRecord<T>);
+
+    fn state(&self) -> (i32, i32);
 }
 
 impl WasmStructPolicy {
@@ -60,19 +62,27 @@ impl WasmPairPolicy {
 }
 
 impl Policy<i32> for WasmPairPolicy {
-    fn initialize(&self, cache_size: i32) {
+    fn initialize(&mut self, cache_size: i32) {
         &self.module.exports.get_function("init").unwrap().call(&[Val::I32(cache_size)]).unwrap();
     }
-    fn send_request(&self, request : CacheEvent<i32>){
+    fn send_request(&mut self, request : FileRecord<i32>){
         &self.module.exports.get_function("send").unwrap().call(&[Val::I32(request.label),Val::I32(request.size)]).unwrap();
+    }
+
+    fn state(&self) -> (i32, i32) {
+        todo!()
     }
 }
 
 impl Policy<i32> for WasmStructPolicy {
-    fn initialize(&self, cache_size: i32) {
+    fn initialize(&mut self, cache_size: i32) {
         &self.module.exports.get_function("init").unwrap().call(&[Val::I32(cache_size)]).unwrap();
     }
-    fn send_request(&self, request : CacheEvent<i32>){
+    fn send_request(&mut self, request : FileRecord<i32>){
+        todo!()
+    }
+
+    fn state(&self) -> (i32, i32) {
         todo!()
     }
 }

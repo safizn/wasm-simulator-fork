@@ -3,9 +3,10 @@ use std::fs::File;
 use std::io::Read;
 use std::str::FromStr;
 use clap::{App, Arg};
-use simulator_shared_types::CacheEvent;
+use simulator_shared_types::FileRecord;
 
 mod policy;
+mod native_modules;
 
 
 fn main() {
@@ -35,7 +36,7 @@ fn main() {
     let mut string = String::new();
     decompressed.read_to_string(&mut string).unwrap();
 
-    let data : Vec<CacheEvent<i32>> = string.lines().map(
+    let data : Vec<FileRecord<i32>> = string.lines().map(
         |line| {
             if let [first, second, ..] = line.trim().split_ascii_whitespace().collect::<Vec<&str>>().as_slice() {
                 (i32::from_str(first).unwrap(),i32::from_str(second).unwrap())
@@ -45,16 +46,22 @@ fn main() {
         }
     ).map(
         |(first, second)| {
-            CacheEvent::<i32>{
+            FileRecord::<i32>{
                 label : first,
                 size : second
             }
         }
     ).collect();
 
-    let module_names = vec!["wasm_bincode_fifo","wasm_c_fifo","wasm_pair_fifo"];
 
-    println!("Data: {:?}", data)
+    let module_names = vec!["wasm_pair_fifo"];
+
+
+
+    println!("Data: {:?}", &data)
+
+
+
 
 
 }
