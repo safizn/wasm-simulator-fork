@@ -3,8 +3,10 @@ use std::fs::File;
 use std::io::Read;
 use std::str::FromStr;
 use clap::{App, Arg};
+use simulator_shared_types::CacheEvent;
 
 mod policy;
+
 
 fn main() {
 
@@ -33,12 +35,19 @@ fn main() {
     let mut string = String::new();
     decompressed.read_to_string(&mut string).unwrap();
 
-    let data : Vec<(i32,i32)> = string.lines().map(
+    let data : Vec<CacheEvent<i32>> = string.lines().map(
         |line| {
             if let [first, second, ..] = line.trim().split_ascii_whitespace().collect::<Vec<&str>>().as_slice() {
                 (i32::from_str(first).unwrap(),i32::from_str(second).unwrap())
             } else {
                 panic!()
+            }
+        }
+    ).map(
+        |(first, second)| {
+            CacheEvent::<i32>{
+                label : first,
+                size : second
             }
         }
     ).collect();

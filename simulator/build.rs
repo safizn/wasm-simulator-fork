@@ -10,7 +10,7 @@ fn main(){
 
     let modules = vec!["sim_modules/wasm/wasm_fifo", "sim_modules/wasm_c_struct/wasm_c_fifo"];
 
-    for module in modules {
+    for module in &modules {
         println!("cargo:rerun-if-changed={}/*",module);
     }
 

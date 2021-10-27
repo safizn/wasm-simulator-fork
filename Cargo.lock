@@ -521,13 +521,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0debeb9fcf88823ea64d64e4a815ab1643f33127d995978e099942ce38f25238"
 
 [[package]]
-name = "native_fifo"
-version = "0.1.0"
-dependencies = [
- "fifo",
-]
-
-[[package]]
 name = "num_cpus"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -839,6 +832,7 @@ dependencies = [
  "flate2",
  "packed_i32",
  "runtime",
+ "simulator_shared_types",
  "wasmer",
 ]
 
