@@ -25,7 +25,7 @@ impl WasmBincodePolicy {
         packed_i32::split_i64_to_i32(merged)
     }
 
-    pub fn from_module(module : &Module) -> Self {
+    pub fn from_module(module : Module) -> Self {
         let import_objects = imports!{};
         // Create new sandbox
         let module = Instance::new(&module, &import_objects).unwrap();
@@ -82,11 +82,28 @@ impl Policy<i32> for WasmBincodePolicy {
     fn initialize(&mut self, cache_size: i64) {
         self.module.exports.get_function("init").unwrap().call(&[Val::I64(cache_size)]).unwrap();
     }
-    fn send_request(&mut self, request : FileRecord<i32>){
-        todo!()
+    fn send_request(&mut self, request: FileRecord<i32>) {
+        let buffer_size = bincode::serialized_size(&request).expect("Could not calculate buffer size") as i32;
+
+        let (ptr, len) = self.alloc(buffer_size);
+
+        let mem = self.module.exports.get_memory("memory").expect("Could not get memory");
+        let mem_array: &mut [u8];
+        let serialized_array = bincode::serialize(&request).expect("Failed to serialize");
+        unsafe {
+            mem_array = mem.data_unchecked_mut(); // Set base address to memory
+            for i in 0..len {
+                // iterate over the serialized struct, copying it to the memory of the target module,
+                // using the ptr provided by prepare_buffer
+                mem_array[ptr as usize + i as usize] = serialized_array[i as usize];
+            }
+        }
+        self.module.exports.get_function("send").unwrap().call(&[Val::I32(ptr), Val::I32(len)]).unwrap();
     }
 
     fn stats(&self) -> (i32, i32) {
-        todo!()
+        let result = self.module.exports.get_function("stats").unwrap().call(&[]).unwrap();
+        let packed = result[0].i64().unwrap();
+        packed_i32::split_i64_to_i32(packed)
     }
 }
