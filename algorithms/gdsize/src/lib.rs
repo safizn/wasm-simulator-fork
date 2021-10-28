@@ -15,29 +15,27 @@ pub struct GdSize<T>{
 /*
  New type pattern to implement sorting for shared type.
  */
-
+#[derive(Eq)]
 struct SortedFileRecord<T>{
     record : FileRecord<T>
 }
 
-
-impl <T> Eq for SortedFileRecord<T> {}
-
-impl <T> PartialEq<Self> for SortedFileRecord<T> {
+impl <T> PartialEq<Self> for SortedFileRecord<T> where T : Eq {
     fn eq(&self, other: &Self) -> bool {
-        self.record.size.eq(&other.record.size)
+        self.record.size == other.record.size
     }
 }
 
-impl <T> PartialOrd<Self> for SortedFileRecord<T>{
+impl <T> PartialOrd<Self> for SortedFileRecord<T> where T : Eq {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.record.size.partial_cmp(&other.record.size)
+        Some(self.cmp(other))
     }
 }
 
-impl <T> Ord for SortedFileRecord<T>{
+impl <T> Ord for SortedFileRecord<T> where T : Eq{
     fn cmp(&self, other: &Self) -> Ordering {
         self.record.size.cmp(&other.record.size)
+        // other.record.size.cmp(&self.record.size)
     }
 }
 

@@ -68,8 +68,12 @@ fn main() {
 
         let store = Store::default();
 
-        let mut policies: Vec<Box<dyn PolicyModule<i32>>> = vec![];
-        policies.push(Box::new(NativePolicyModule::<FiFo<i32>,i32>::new()));
+        let mut policies: Vec<(&str,Box<dyn PolicyModule<i32>>)> = vec![];
+        policies.push((
+            "Native FiFo"
+             ,Box::new(NativePolicyModule::<FiFo<i32>,i32>::new()
+            )
+        ));
 
 
 
@@ -79,7 +83,7 @@ fn main() {
             Box::new(WasmPairPolicyModule::from_module(module))
         };
 
-        policies.push(wasm_pair);
+        policies.push(("WASM Pair FiFo",wasm_pair));
 
         let wasm_bincode = {
             let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_fifo.wasm");
@@ -87,11 +91,12 @@ fn main() {
             Box::new(WasmBincodePolicyModule::from_module(module))
         };
 
-        policies.push(wasm_bincode);
+        policies.push(("WASM Bincode FiFo",wasm_bincode));
 
-        policies.push(Box::new(NativePolicyModule::<GdSize<i32>,i32>::new()));
+        policies.push(("Native GdSize",Box::new(NativePolicyModule::<GdSize<i32>,i32>::new())));
 
-        for mut policy in policies {
+        println!("Size: {0:<10} ",size/(1024*1024));
+        for (name, mut policy) in policies {
             let start = std::time::Instant::now();
             policy.initialize(size);
             for file in &data {
@@ -99,7 +104,7 @@ fn main() {
             }
             let (total, hits) = policy.stats();
             let end = std::time::Instant::now();
-            println!("SIZE: {} Total: {} Hits: {} Time: {} Hitrate: {}", size/ (1024*1024), total, hits, (end-start).as_secs_f32(), hits as f32/total as f32 * 100.0);
+            println!("Name: {0:<20} | Hits: {1:<10} | Time: {2:<10} | Hitrate: {3:<10}", name, hits, (end-start).as_secs_f32(), hits as f32/total as f32 * 100.0);
         }
 
     }
