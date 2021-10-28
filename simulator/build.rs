@@ -21,7 +21,7 @@ fn main(){
 
     for module in modules {
         let _result = Command::new("cargo")
-            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../../../modules"])
+            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../../../modules","--release"])
             .current_dir(format!("../{}",module))
             .status()
             .expect(format!("Compilation Failed for wasm module:{}",module).as_str());

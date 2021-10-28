@@ -1,9 +1,13 @@
 use flate2::read::GzDecoder;
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 use std::str::FromStr;
 use clap::{App, Arg};
+use wasmer::{Module, Store};
 use simulator_shared_types::FileRecord;
+use crate::native_modules::NativeFiFo;
+use crate::policy::{Policy, WasmPairPolicy};
 
 mod policy;
 mod native_modules;
@@ -39,7 +43,7 @@ fn main() {
     let data : Vec<FileRecord<i32>> = string.lines().map(
         |line| {
             if let [first, second, ..] = line.trim().split_ascii_whitespace().collect::<Vec<&str>>().as_slice() {
-                (i32::from_str(first).unwrap(),i32::from_str(second).unwrap())
+                (i32::from_str(first).unwrap(),i64::from_str(second).unwrap())
             } else {
                 panic!()
             }
@@ -54,11 +58,40 @@ fn main() {
     ).collect();
 
 
-    let module_names = vec!["wasm_pair_fifo"];
+    //let module_names = vec!["wasm_pair_fifo"];
+
+    let mut size : i64 = 512 * 1024;
+    while size < 1024*1024*1024*8 {
+        size *= 2;
+
+        let store = Store::default();
+
+        let mut policies: Vec<Box<dyn Policy<i32>>> = vec![];
+        policies.push(Box::new(NativeFiFo::new()));
 
 
+        let wasm_pair = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_pair_fifo.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmPairPolicy::from_module(module))
+        };
 
-    println!("Data: {:?}", &data)
+        policies.push(wasm_pair);
+
+        for mut policy in policies {
+            let start = std::time::Instant::now();
+            policy.initialize(size);
+            for file in &data {
+                policy.send_request((*file).clone())
+            }
+            let (total, hits) = policy.stats();
+            let end = std::time::Instant::now();
+            println!("SIZE: {} Total: {} Hits: {} Time: {} Hitrate: {}", size/ (1024*1024), total, hits, (end-start).as_secs_f32(), hits as f32/total as f32 * 100.0);
+        }
+
+    }
+
+    //println!("Data: {:?}", &data)
 
 
 

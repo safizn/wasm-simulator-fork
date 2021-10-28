@@ -552,6 +552,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "once_cell"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
+
+[[package]]
 name = "packed_i32"
 version = "0.1.0"
 
@@ -1070,6 +1076,7 @@ dependencies = [
  "bincode",
  "console_error_panic_hook",
  "fifo",
+ "once_cell",
  "packed_i32",
  "simulator_shared_types",
 ]
@@ -1090,6 +1097,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "fifo",
+ "once_cell",
  "packed_i32",
  "simulator_shared_types",
 ]

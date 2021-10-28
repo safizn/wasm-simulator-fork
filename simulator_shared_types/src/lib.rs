@@ -1,8 +1,8 @@
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Hash)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone, Hash)]
 pub struct FileRecord<T> {
     pub label: T,
-    pub size : i32
+    pub size : i64
 }

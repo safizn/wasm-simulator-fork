@@ -24,3 +24,4 @@ fifo = {path = "../../../algorithims/fifo"}
 bincode = "1.3.3"
 packed_i32 = {path = "../../../shared_crates/packed_i32" }
 simulator_shared_types = {path = "../../../simulator_shared_types"}
+once_cell = "1.8.0"
