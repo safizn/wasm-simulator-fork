@@ -1,23 +1,27 @@
 use std::hash::Hash;
+use std::marker::PhantomData;
+use algorithm::CacheAlgorithm;
 use fifo::FiFo;
 use simulator_shared_types::FileRecord;
-use crate::policy::Policy;
+use crate::policy::PolicyModule;
 
-pub struct NativeFiFo<T> {
-    fifo: Option<FiFo<T>>
+pub struct NativePolicyModule<Alg,T> where Alg : CacheAlgorithm<T> {
+    fifo: Option<Alg>,
+    phantom: PhantomData<T>
 }
 
-impl <T> NativeFiFo<T> {
+impl <Alg,T> NativePolicyModule<Alg,T> where Alg : CacheAlgorithm<T> {
     pub fn new() -> Self {
-        NativeFiFo{
-            fifo : None
+        NativePolicyModule{
+            fifo : None,
+            phantom: PhantomData
         }
     }
 }
 
-impl <T> Policy<T> for NativeFiFo<T> where T : Hash + Eq + Clone{
+impl <Alg,T> PolicyModule<T> for NativePolicyModule<Alg,T> where T : Hash + Eq + Clone, Alg: CacheAlgorithm<T>{
     fn initialize(&mut self, cache_size: i64) {
-       self.fifo = Some(FiFo::new(cache_size))
+       self.fifo = Some(Alg::new(cache_size))
     }
 
     fn send_request(&mut self, pair: FileRecord<T>) {

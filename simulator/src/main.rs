@@ -5,9 +5,11 @@ use std::path::Path;
 use std::str::FromStr;
 use clap::{App, Arg};
 use wasmer::{Module, Store};
+use fifo::FiFo;
+use gdsize::GdSize;
 use simulator_shared_types::FileRecord;
-use crate::native_modules::NativeFiFo;
-use crate::policy::{Policy, WasmBincodePolicy, WasmPairPolicy};
+use crate::native_modules::NativePolicyModule;
+use crate::policy::{PolicyModule, WasmBincodePolicyModule, WasmPairPolicyModule};
 
 mod policy;
 mod native_modules;
@@ -66,14 +68,15 @@ fn main() {
 
         let store = Store::default();
 
-        let mut policies: Vec<Box<dyn Policy<i32>>> = vec![];
-        policies.push(Box::new(NativeFiFo::new()));
+        let mut policies: Vec<Box<dyn PolicyModule<i32>>> = vec![];
+        policies.push(Box::new(NativePolicyModule::<FiFo<i32>,i32>::new()));
+
 
 
         let wasm_pair = {
             let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_pair_fifo.wasm");
             let module = Module::from_file(&store,path).expect("Module Not Found");
-            Box::new(WasmPairPolicy::from_module(module))
+            Box::new(WasmPairPolicyModule::from_module(module))
         };
 
         policies.push(wasm_pair);
@@ -81,11 +84,12 @@ fn main() {
         let wasm_bincode = {
             let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_fifo.wasm");
             let module = Module::from_file(&store,path).expect("Module Not Found");
-            Box::new(WasmBincodePolicy::from_module(module))
+            Box::new(WasmBincodePolicyModule::from_module(module))
         };
 
         policies.push(wasm_bincode);
 
+        policies.push(Box::new(NativePolicyModule::<GdSize<i32>,i32>::new()));
 
         for mut policy in policies {
             let start = std::time::Instant::now();

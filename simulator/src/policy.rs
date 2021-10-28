@@ -1,15 +1,15 @@
 use wasmer::{Store, Module, Instance, imports, Value, Val, Function};
 use simulator_shared_types::FileRecord;
 
-pub struct WasmBincodePolicy {
+pub struct WasmBincodePolicyModule {
     module : Instance
 }
 
-pub struct WasmPairPolicy{
+pub struct WasmPairPolicyModule {
     module : Instance,
 }
 
-pub trait Policy<T> {
+pub trait PolicyModule<T> {
 
     fn initialize(&mut self, cache_size : i64);
 
@@ -18,7 +18,7 @@ pub trait Policy<T> {
     fn stats(&self) -> (i32, i32);
 }
 
-impl WasmBincodePolicy {
+impl WasmBincodePolicyModule {
     fn alloc(&self, size : i32) -> (i32,i32) {
         let results = &self.module.exports.get_function("alloc").unwrap().call(&[Val::I32(size)]).unwrap();
         let merged = results[0].unwrap_i64();
@@ -37,7 +37,7 @@ impl WasmBincodePolicy {
 
 
 
-        let out = WasmBincodePolicy {
+        let out = WasmBincodePolicyModule {
             module
         };
 
@@ -46,7 +46,7 @@ impl WasmBincodePolicy {
     }
 }
 
-impl WasmPairPolicy {
+impl WasmPairPolicyModule {
 
     pub fn from_module(module : Module) -> Self {
         let import_objects = imports!{};
@@ -56,14 +56,14 @@ impl WasmPairPolicy {
         let _init = module.exports.get_function("init").unwrap();
         let _init = module.exports.get_function("stats").unwrap();
 
-        let out = WasmPairPolicy {
+        let out = WasmPairPolicyModule {
             module
         };
         out
     }
 }
 
-impl Policy<i32> for WasmPairPolicy {
+impl PolicyModule<i32> for WasmPairPolicyModule {
     fn initialize(&mut self, cache_size: i64) {
         self.module.exports.get_function("init").unwrap().call(&[Val::I64(cache_size)]).unwrap();
     }
@@ -78,7 +78,7 @@ impl Policy<i32> for WasmPairPolicy {
     }
 }
 
-impl Policy<i32> for WasmBincodePolicy {
+impl PolicyModule<i32> for WasmBincodePolicyModule {
     fn initialize(&mut self, cache_size: i64) {
         self.module.exports.get_function("init").unwrap().call(&[Val::I64(cache_size)]).unwrap();
     }

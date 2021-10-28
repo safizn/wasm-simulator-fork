@@ -10,3 +10,4 @@ edition = "2018"
 
 [dependencies]
 simulator_shared_types = {path = "../../simulator_shared_types"}
+algorithm = {path = "../../shared_crates/algorithm"}

@@ -1,14 +1,7 @@
 use std::collections::{ HashSet, VecDeque};
 use std::hash::Hash;
+use algorithm::CacheAlgorithm;
 use simulator_shared_types::FileRecord;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
 
 pub struct FiFo<T> {
     queue : VecDeque<FileRecord<T>>, // Double ended queue - basically ring buffer for order items have entered queue
@@ -19,8 +12,14 @@ pub struct FiFo<T> {
     hit_count : i32
 }
 
-impl <T> FiFo<T> where T : Hash + Eq + Clone{
-    pub fn simulate(&mut self, file: FileRecord<T>) {
+impl <T> FiFo<T> where T : Hash + Eq + Clone {
+    fn in_cache(&self, file : &FileRecord<T>) -> bool {
+        self.cache.contains(&file.label.clone())
+    }
+}
+
+impl <T> CacheAlgorithm<T> for FiFo<T> where T : Hash + Eq + Clone{
+    fn simulate(&mut self, file: FileRecord<T>) {
         if file.size > self.size {
             println!("FILE SIZE: {}", file.size);
             panic!("File larger than cache")
@@ -40,12 +39,7 @@ impl <T> FiFo<T> where T : Hash + Eq + Clone{
         }
     }
 
-    fn in_cache(&self, file : &FileRecord<T>) -> bool {
-        self.cache.contains(&file.label.clone())
-    }
-
-
-    pub fn new(size: i64) -> Self {
+    fn new(size: i64) -> Self {
         FiFo::<T> {
             queue: VecDeque::<FileRecord<T>>::new(),
             cache: Default::default(),
@@ -56,7 +50,7 @@ impl <T> FiFo<T> where T : Hash + Eq + Clone{
         }
     }
 
-    pub fn stats(&self) -> (i32,i32) {
+    fn stats(&self) -> (i32,i32) {
         (self.event_count, self.hit_count)
     }
 }

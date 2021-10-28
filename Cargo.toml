@@ -9,9 +9,11 @@ members = [
     "struct_addition",
     "benchmark_shared_data_structures",
     "shared_crates/packed_i32",
+    "shared_crates/algorithm",
     "simulator_shared_types",
-    "algorithims/fifo",
+    "algorithms/fifo",
+    "algorithms/gdsize",
     "sim_modules/wasm_bincode/wasm_bincode_fifo",
     "sim_modules/wasm_c_struct/wasm_c_fifo",
-    "sim_modules/wasm_pair/wasm_pair_fifo"
+    "sim_modules/wasm_pair/wasm_pair_fifo",
 ]
