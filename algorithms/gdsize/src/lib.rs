@@ -69,8 +69,10 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
             self.hit_count += 1;
             return;
         }
+
         self.cache.insert(file.label.clone());
         self.current_used += file.size;
+
         let h_value = self.inflation + 1.0/(file.size as f64);
         let sorted = SortedFileRecord{
             record: file,
@@ -84,6 +86,7 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
             self.inflation = popped.h_value.0
         }
     }
+
 
     fn new(size: i64) -> Self {
         GdSize::<T> {
