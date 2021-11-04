@@ -8,7 +8,6 @@ use simulator_shared_types::FileRecord;
 
 pub struct LFU<T> where T : Hash + Eq{
     heap: PriorityQueue<FileRecord<T>,Reverse<FileSorting>>,
-    memory : HashMap<FileRecord<T>,u64>,
     current_used : i64, // current space in cache
     size : i64, // size of cache
     event_count: u64,
@@ -53,48 +52,41 @@ impl<T> CacheAlgorithm<T> for LFU<T> where T : Hash + Eq + Clone + Debug{
         self.event_count += 1;
         let size = file.size;
 
-        let prev = match self.heap.get_priority(&file) {
-            Some(i) => i.0.freq + 1_u64,
-            None => match self.memory.get(&file) {
-                None =>  1_u64,
-                Some(i) => i + 1_u64
-            }
-        };
-
         let id = file.label.clone();
-        if let None = self.heap.get_priority(&file){
-            self.current_used += size;
-            while self.current_used > self.size {
-                let popped = self.heap.pop().unwrap();
-                if popped.0.label == id {
-                    panic!("Popped file we just inserted")
+
+        let new_record = match self.heap.get_priority(&file){
+            Some(i) => {
+                self.hit_count+=1;
+
+                FileSorting{
+                    freq: i.0.freq + 1_u64,
+                    last_used: self.event_count
                 }
-                //println!("POPPED: {:?}", popped);
-                self.current_used -= popped.0.size;
-                self.memory.insert(popped.0, popped.1.0.freq);
             }
-        }
+            None => {
+                self.current_used += size;
+                while self.current_used > self.size {
+                    let popped = self.heap.pop().unwrap();
+                    if popped.0.label == id {
+                        panic!("Popped file we just inserted")
+                    }
+                    //println!("POPPED: {:?}", popped);
+                    self.current_used -= popped.0.size;
 
-
-        let new = FileSorting{
-            freq: prev,
-            last_used: self.event_count
+                }
+                FileSorting{
+                    freq:  1_u64,
+                    last_used: self.event_count
+                }
+            }
         };
-
-        if let Some(z) = self.heap.push(file,Reverse(new.clone())){
-            self.hit_count += 1;
-            return;
-        }
-
-
-
+        self.heap.push(file,Reverse(new_record));
     }
 
 
     fn new(size: i64) -> Self {
         LFU::<T> {
             heap: PriorityQueue::<FileRecord<T>,Reverse<FileSorting>>::new(),
-            memory: HashMap::new(),
             current_used: 0,
             size,
             event_count: 0,

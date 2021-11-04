@@ -24,10 +24,9 @@ impl<T> CacheAlgorithm<T> for LRU<T> where T : Hash + Eq + Clone{
             return;
         }
         let id = file.label.clone();
-        //self.cache.insert(file.label.clone());
         self.current_used += file.size;
 
-        self.heap.push(file, Reverse(self.event_count)); // use event count as
+
         while self.current_used > self.size {
             let popped = self.heap.pop().unwrap();
             if popped.0.label == id {
@@ -35,6 +34,8 @@ impl<T> CacheAlgorithm<T> for LRU<T> where T : Hash + Eq + Clone{
             }
             self.current_used -= popped.0.size;
         }
+
+        self.heap.push(file, Reverse(self.event_count)); // use event count as
     }
 
 
