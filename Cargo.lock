@@ -436,6 +436,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3576a87f2ba00f6f106fdfcd16db1d698d648a26ad8e0573cad8537c3c362d2a"
 
 [[package]]
+name = "lfu"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "priority-queue",
+ "simulator_shared_types",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -486,6 +495,15 @@ checksum = "c0fbfc88337168279f2e9ae06e157cfed4efd3316e14dc96ed074d4f2e6c5952"
 dependencies = [
  "quote",
  "syn",
+]
+
+[[package]]
+name = "lru"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "priority-queue",
+ "simulator_shared_types",
 ]
 
 [[package]]
@@ -588,6 +606,16 @@ name = "ppv-lite86"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
+
+[[package]]
+name = "priority-queue"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf40e51ccefb72d42720609e1d3c518de8b5800d723a09358d4a6d6245e1f8ca"
+dependencies = [
+ "autocfg",
+ "indexmap",
+]
 
 [[package]]
 name = "proc-macro-error"
@@ -856,6 +884,8 @@ dependencies = [
  "fifo",
  "flate2",
  "gdsize",
+ "lfu",
+ "lru",
  "packed_i32",
  "runtime",
  "simulator_shared_types",

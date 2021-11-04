@@ -7,6 +7,8 @@ use clap::{App, Arg};
 use wasmer::{Module, Store};
 use fifo::FiFo;
 use gdsize::GdSize;
+use lfu::LFU;
+use lru::LRU;
 use simulator_shared_types::FileRecord;
 use crate::native_modules::NativePolicyModule;
 use crate::policy::{PolicyModule, WasmBincodePolicyModule, WasmPairPolicyModule};
@@ -94,6 +96,8 @@ fn main() {
         policies.push(("WASM Bincode FiFo",wasm_bincode));
 
         policies.push(("Native GdSize",Box::new(NativePolicyModule::<GdSize<i32>,i32>::new())));
+        policies.push(("Native LRU",Box::new(NativePolicyModule::<LRU<i32>,i32>::new())));
+        policies.push(("Native LFU",Box::new(NativePolicyModule::<LFU<i32>,i32>::new())));
 
         println!("Size: {0:<10} ",size/(1024*1024));
         for (name, mut policy) in policies {

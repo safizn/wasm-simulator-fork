@@ -18,6 +18,8 @@
       <sourceFolder url="file://$MODULE_DIR$/shared_crates/algorithm/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_fifo/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_fifo/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/algorithms/lfu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/algorithms/lru/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

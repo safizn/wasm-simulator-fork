@@ -17,3 +17,5 @@ simulator_shared_types = {path = "../simulator_shared_types"}
 algorithm = {path = "../shared_crates/algorithm"}
 gdsize = {path = "../algorithms/gdsize"}
 fifo = {path = "../algorithms/fifo" }
+lfu = {path = "../algorithms/lfu" }
+lru = {path = "../algorithms/lru" }
