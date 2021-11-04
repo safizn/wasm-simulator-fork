@@ -10,14 +10,27 @@ pub struct GdSize<T>{
     current_used : i64, // current space in cache
     size : i64, // size of cache
     event_count: i32,
-    hit_count : i32
+    hit_count : i32,
+    inflation : f64
 }
 /*
  New type pattern to implement sorting for shared type.
  */
+
+#[derive(PartialEq, PartialOrd)]
+struct NonNan(f64);
+
+impl Eq for NonNan{}
+
+impl Ord for NonNan{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
 #[derive(Eq)]
 struct SortedFileRecord<T>{
-    record : FileRecord<T>
+    record : FileRecord<T>,
+    h_value: NonNan
 }
 
 impl <T> PartialEq<Self> for SortedFileRecord<T> where T : Eq {
@@ -34,7 +47,7 @@ impl <T> PartialOrd<Self> for SortedFileRecord<T> where T : Eq {
 
 impl <T> Ord for SortedFileRecord<T> where T : Eq{
     fn cmp(&self, other: &Self) -> Ordering {
-        self.record.size.cmp(&other.record.size)
+        other.h_value.cmp(&self.h_value)
         // other.record.size.cmp(&self.record.size)
     }
 }
@@ -56,18 +69,24 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
             self.hit_count += 1;
             return;
         }
+
         self.cache.insert(file.label.clone());
         self.current_used += file.size;
+
+        let h_value = self.inflation + 1.0/(file.size as f64);
         let sorted = SortedFileRecord{
-            record: file
+            record: file,
+            h_value: NonNan(h_value)
         };
         self.heap.push(sorted);
         while self.current_used > self.size {
             let popped = self.heap.pop().unwrap();
             self.cache.remove(&popped.record.label.clone());
             self.current_used -= popped.record.size;
+            self.inflation = popped.h_value.0
         }
     }
+
 
     fn new(size: i64) -> Self {
         GdSize::<T> {
@@ -76,7 +95,8 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
             current_used: 0,
             size,
             event_count: 0,
-            hit_count: 0
+            hit_count: 0,
+            inflation: 0.0
         }
     }
 
