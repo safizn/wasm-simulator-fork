@@ -29,11 +29,15 @@ impl <T> CacheAlgorithm<T> for FiFo<T> where T : Hash + Eq + Clone{
             self.hit_count += 1;
             return;
         }
+        let id = file.label.clone();
         self.cache.insert(file.label.clone());
         self.current_used += file.size;
         self.queue.push_front(file);
         while self.current_used > self.size {
             let popped = self.queue.pop_back().unwrap();
+            if popped.label == id {
+                panic!("Popped file we just inserted")
+            }
             self.cache.remove(&popped.label.clone());
             self.current_used -= popped.size;
         }
