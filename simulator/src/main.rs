@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use flate2::read::GzDecoder;
 use std::fs::File;
 use std::io::Read;
@@ -61,10 +62,32 @@ fn main() {
         }
     ).collect();
 
+    let mut map = HashMap::<i32,Box<HashSet<i64>>>::new();
+    for i in data.clone(){
+        if map.contains_key(&i.label){
+            map.get_mut(&i.label).unwrap().as_mut().insert(i.size);
+        } else {
+            let mut set = HashSet::new();
+            set.insert(i.size);
+            map.insert(i.label, Box::from(set));
+        }
+    }
+
+    let mut fail = false;
+    for (entry,sizes) in map {
+        if sizes.len() > 1 {
+            fail = true;
+            println!("File {} had too many sizes: {:?}",entry,sizes)
+        }
+    }
+    if fail {
+        panic!("Trace integrity check failed. See above for files with multiple sizes")
+    }
+
 
     //let module_names = vec!["wasm_pair_fifo"];
 
-    let mut size : i64 = 512 * 1024;
+    let mut size : i64 = 512 * 1024 ;
     while size < 1024*1024*1024*8 {
         size *= 2;
 

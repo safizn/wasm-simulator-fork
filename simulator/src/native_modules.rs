@@ -1,7 +1,6 @@
 use std::hash::Hash;
 use std::marker::PhantomData;
 use algorithm::CacheAlgorithm;
-use fifo::FiFo;
 use simulator_shared_types::FileRecord;
 use crate::policy::PolicyModule;
 
