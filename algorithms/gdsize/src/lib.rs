@@ -68,6 +68,17 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
         if self.in_cache(&file) {
             self.hit_count += 1;
             return;
+        } else {
+            let id = file.label.clone();
+            self.current_used += file.size;
+            while self.current_used > self.size {
+                let popped = self.heap.pop().unwrap();
+                if popped.record.label == id {
+                    panic!("Popped file we just inserted")
+                }
+                self.cache.remove(&popped.record.label.clone());
+                self.current_used -= popped.record.size;
+            }
         }
 
         self.cache.insert(file.label.clone());
@@ -79,12 +90,8 @@ impl<T> CacheAlgorithm<T> for GdSize<T> where T : Hash + Eq + Clone{
             h_value: NonNan(h_value)
         };
         self.heap.push(sorted);
-        while self.current_used > self.size {
-            let popped = self.heap.pop().unwrap();
-            self.cache.remove(&popped.record.label.clone());
-            self.current_used -= popped.record.size;
-            self.inflation = popped.h_value.0
-        }
+
+
     }
 
 
