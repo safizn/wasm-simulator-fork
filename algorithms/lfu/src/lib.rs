@@ -37,7 +37,7 @@ impl Ord for FileSorting {
     }
 }
 
-#[derive(Eq,PartialEq,Debug)]
+#[derive(Eq,PartialEq,Debug,Clone)]
 struct FileSorting {
     freq : u64,
     last_used: u64
@@ -61,21 +61,32 @@ impl<T> CacheAlgorithm<T> for LFU<T> where T : Hash + Eq + Clone + Debug{
             }
         };
 
-        if let Some(_) = self.heap.push(file,Reverse(FileSorting{
+        let id = file.label.clone();
+        if let None = self.heap.get_priority(&file){
+            self.current_used += size;
+            while self.current_used > self.size {
+                let popped = self.heap.pop().unwrap();
+                if popped.0.label == id {
+                    panic!("Popped file we just inserted")
+                }
+                //println!("POPPED: {:?}", popped);
+                self.current_used -= popped.0.size;
+                self.memory.insert(popped.0, popped.1.0.freq);
+            }
+        }
+
+
+        let new = FileSorting{
             freq: prev,
             last_used: self.event_count
-        })){
+        };
+
+        if let Some(z) = self.heap.push(file,Reverse(new.clone())){
             self.hit_count += 1;
             return;
         }
 
-        self.current_used += size;
-        while self.current_used > self.size {
-            let popped = self.heap.pop().unwrap();
-            //println!("POPPED: {:?}", popped);
-            self.current_used -= popped.0.size;
-            self.memory.insert(popped.0, popped.1.0.freq);
-        }
+
 
     }
 
