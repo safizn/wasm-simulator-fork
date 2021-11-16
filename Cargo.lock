@@ -1121,9 +1121,49 @@ checksum = "0237232789cf037d5480773fe568aac745bfe2afbc11a863e97901780a6b47cc"
 name = "wasm_bincode_fifo"
 version = "0.1.0"
 dependencies = [
+ "algorithm",
  "bincode",
  "console_error_panic_hook",
  "fifo",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_bincode_gdsize"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bincode",
+ "console_error_panic_hook",
+ "gdsize",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_bincode_lfu"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bincode",
+ "console_error_panic_hook",
+ "lfu",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_bincode_lru"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bincode",
+ "console_error_panic_hook",
+ "lru",
  "once_cell",
  "packed_i32",
  "simulator_shared_types",
@@ -1143,8 +1183,45 @@ dependencies = [
 name = "wasm_pair_fifo"
 version = "0.1.0"
 dependencies = [
+ "algorithm",
  "console_error_panic_hook",
  "fifo",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_pair_gdsize"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "console_error_panic_hook",
+ "gdsize",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_pair_lfu"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "console_error_panic_hook",
+ "lfu",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_pair_lru"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "console_error_panic_hook",
+ "lru",
  "once_cell",
  "packed_i32",
  "simulator_shared_types",

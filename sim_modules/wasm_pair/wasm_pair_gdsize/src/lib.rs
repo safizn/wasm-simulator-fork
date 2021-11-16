@@ -1,18 +1,18 @@
 use std::fs::File;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
-use algorithm::CacheAlgorithm;
-use fifo::FiFo;
+use gdsize::GdSize;
 use simulator_shared_types::FileRecord;
+use algorithm::CacheAlgorithm;
 
 
-static POLICY : Lazy<Mutex<Option<FiFo<i32>>>> = Lazy::new(||{
+static POLICY : Lazy<Mutex<Option<GdSize<i32>>>> = Lazy::new(||{
     Mutex::new(None)
 });
 
 #[no_mangle]
 pub fn init(size: i64){
-    *POLICY.lock().unwrap() = Some(FiFo::<i32>::new(size));
+    *POLICY.lock().unwrap() = Some(GdSize::<i32>::new(size));
 }
 #[no_mangle]
 pub fn send(label: i32, size : i64){

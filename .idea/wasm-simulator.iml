@@ -20,6 +20,12 @@
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_fifo/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/algorithms/lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/algorithms/lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_gdsize/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_lfu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_gdsize/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lfu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lru/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
