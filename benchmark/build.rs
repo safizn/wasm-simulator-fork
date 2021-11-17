@@ -8,7 +8,7 @@ fn main(){
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=benchmark_shared_data_structures/*");
-    let modules = vec!["testModule", "loop_test_module","struct_addition"];
+    let modules = vec!["benchmark_modules/testModule", "benchmark_modules/loop_test_module","benchmark_modules/bincode_addition","benchmark_modules/bytemuck_addition"];
 
     for module in &modules {
         println!("cargo:rerun-if-changed={}/*",module);
@@ -16,7 +16,7 @@ fn main(){
 
     for module in modules {
         let _result = Command::new("cargo")
-            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../../../modules","--release"])
+            .args(&["build",format!("--target={}",WASM_UNKNOWN).as_str(),"--target-dir=../../modules","--release"])
             .current_dir(format!("../{}",module))
             .status().unwrap();
 

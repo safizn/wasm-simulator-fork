@@ -1,6 +1,5 @@
 use std::path::Path;
-use wasmer::{Store, Module, Instance, imports, Value, Val};
-use wasmer::wasmparser::Type::I32;
+use wasmer::{Store, Module, Instance, imports, Value};
 use benchmark_shared_data_structures::MultiplyParams;
 
 fn main() {
@@ -12,7 +11,7 @@ fn main() {
 
     let store = Store::default();
     println!("{:?}",std::env::current_dir());
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/testModule.wasm_bincode");
+    let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -23,7 +22,7 @@ fn main() {
     let multiply = instance.exports.get_function("multiply").expect("Failed to find method: multiply");
 
 
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/loop_test_module.wasm_bincode");
+    let path = Path::new("./modules/wasm32-unknown-unknown/release/loop_test_module.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -33,7 +32,7 @@ fn main() {
 
     let multiply_many_times =instance.exports.get_function("multiply_many_times").expect("Failed to find method: multiply");
 
-    let path = Path::new("./modules/wasm32-unknown-unknown/debug/struct_addition.wasm_bincode");
+    let path = Path::new("./modules/wasm32-unknown-unknown/release/bincode_addition.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
 
     // Prepare environment with imports
@@ -41,6 +40,13 @@ fn main() {
     // Create new sandbox
     let struct_add_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
+    let path = Path::new("./modules/wasm32-unknown-unknown/release/bytemuck_addition.wasm");
+    let module = Module::from_file(&store,path).expect("Module Not Found");
+
+    // Prepare environment with imports
+    let import_objects = imports!{};
+    // Create new sandbox
+    let bytemuck_add_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
     let runs = 100;
 
@@ -125,13 +131,61 @@ fn main() {
             x : 2,
             y : 3
         };
-        for i in 0..100_000{
+        for _ in 0..100_000{
             call_add_test(&params, &struct_add_instance)
         }
         let end = std::time::Instant::now();
         end-start
     };
     println!("Struct addition: {}",duration.as_secs_f32());
+
+    let duration  = {
+        let start = std::time::Instant::now();
+        let params = MultiplyParams {
+            x : 2,
+            y : 3
+        };
+        for _ in 0..100_000{
+            call_add_test_muck(params, &bytemuck_add_instance)
+        }
+        let end = std::time::Instant::now();
+        end-start
+    };
+    println!("Bytes Struct addition: {}",duration.as_secs_f32());
+
+}
+
+fn call_add_test_muck(params : MultiplyParams, instance : &Instance ){
+    let buffer_size = std::mem::size_of::<MultiplyParams>();
+
+    //println!("BUFFER_SIZE: {}", buffer_size);
+    let prepare_buffer_fuc = instance
+        .exports
+        .get_function("wasm_prepare_buffer")
+        .expect("No such function");
+
+    let result = prepare_buffer_fuc.call(&[Value::I32(buffer_size as i32)]).expect("Function call failed");
+
+    let compressed_nums = result[0].i64().expect("Was not i64");
+
+    let (ptr, len) = packed_i32::split_i64_to_i32(compressed_nums);
+
+    let mem = instance.exports.get_memory("memory").expect("Could not get memory");
+
+    let expected = params.x * params.y;
+
+    runtime::write_bytemuck_to_wasm_memory(params, mem, ptr as usize, len as usize);
+
+    // Now, call the method
+    let struct_add = instance
+        .exports
+        .get_function("struct_add")
+        .expect("Could not find function struct_add");
+
+    let result = struct_add.call(&[Value::I32(ptr),Value::I32(len)])
+        .expect("Function call failed");
+
+    assert_eq!(result[0].i32().expect("Was not i32"), expected);
 
 }
 
@@ -150,16 +204,8 @@ fn call_add_test(params : &MultiplyParams, instance : &Instance ){
     let (ptr, len) = packed_i32::split_i64_to_i32(compressed_nums);
 
     let mem = instance.exports.get_memory("memory").expect("Could not get memory");
-    let mem_array: &mut [u8];
-    let serialized_array = bincode::serialize(params).expect("Failed to serialize");
-    unsafe {
-        mem_array = mem.data_unchecked_mut(); // Set base address to memory
-        for i in 0..len {
-            // iterate over the serialized struct, copying it to the memory of the target module,
-            // using the ptr provided by prepare_buffer
-            mem_array[ptr as usize + i as usize] = serialized_array[i as usize];
-        }
-    }
+
+    runtime::write_bincode_to_wasm_memory(params, mem, ptr as usize, len as usize);
 
     // Now, call the method
     let struct_add = instance

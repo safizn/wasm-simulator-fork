@@ -5,10 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/benchmark/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/runtime/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/simulator/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/testModule/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/loop_test_module/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/benchmark_shared_data_structures/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/struct_addition/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/simulator_shared_types/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/shared_crates/packed_i32/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/native/native_fifo/src" isTestSource="false" />
@@ -20,12 +17,16 @@
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_fifo/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/algorithms/lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/algorithms/lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/bincode_addition/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/loop_test_module/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/testModule/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_gdsize/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_bincode/wasm_bincode_lru/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_gdsize/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/bytemuck_addition/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

@@ -1,5 +1,5 @@
 [package]
-name = "struct_addition"
+name = "bincode_addition"
 version = "0.1.0"
 edition = "2018"
 
@@ -21,6 +21,6 @@ default = ["console_error_panic_hook"]
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.6", optional = true }
-benchmark_shared_data_structures = {path = "../benchmark_shared_data_structures"}
+benchmark_shared_data_structures = {path = "../../benchmark_shared_data_structures" }
 bincode = "1.3.3"
-packed_i32 = {path = "../shared_crates/packed_i32" }
+packed_i32 = {path = "../../shared_crates/packed_i32" }

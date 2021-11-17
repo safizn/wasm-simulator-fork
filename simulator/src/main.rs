@@ -124,13 +124,14 @@ fn main() {
 
         policies.push(("WASM Pair GdSize",wasm_bincode));
 
-        // let wasm_bincode = {
-        //     let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_fifo.wasm");
-        //     let module = Module::from_file(&store,path).expect("Module Not Found");
-        //     Box::new(WasmBincodePolicyModule::from_module(module))
-        // };
-        //
-        // policies.push(("WASM Bincode GdSize",wasm_bincode));
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_gdsize.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("WASM Bincode GdSize",wasm_bincode));
+
         policies.push(("Native LRU",Box::new(NativePolicyModule::<LRU<i32>,i32>::new())));
         let wasm_bincode = {
             let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_pair_lru.wasm");
@@ -139,6 +140,14 @@ fn main() {
         };
 
         policies.push(("WASM Pair LRU",wasm_bincode));
+
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_lru.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("WASM Bincode LRU",wasm_bincode));
 
         policies.push(("Native LFU",Box::new(NativePolicyModule::<LFU<i32>,i32>::new())));
 
@@ -150,6 +159,13 @@ fn main() {
 
         policies.push(("WASM Pair LFU",wasm_bincode));
 
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_lfu.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("WASM Bincode LFU",wasm_bincode));
         println!("Size: {0:<10} ",size/(1024*1024));
         for (name, mut policy) in policies {
             let start = std::time::Instant::now();
