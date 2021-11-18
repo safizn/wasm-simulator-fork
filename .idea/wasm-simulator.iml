@@ -27,6 +27,7 @@
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_pair/wasm_pair_lru/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/bytemuck_addition/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/benchmark_modules/bytemuck_addition_fixed/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

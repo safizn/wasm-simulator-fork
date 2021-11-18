@@ -19,3 +19,5 @@ gdsize = {path = "../algorithms/gdsize"}
 fifo = {path = "../algorithms/fifo" }
 lfu = {path = "../algorithms/lfu" }
 lru = {path = "../algorithms/lru" }
+
+ouroboros = "0.13.0"

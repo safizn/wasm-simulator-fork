@@ -12,7 +12,7 @@ use lfu::LFU;
 use lru::LRU;
 use simulator_shared_types::FileRecord;
 use crate::native_modules::NativePolicyModule;
-use crate::policy::{PolicyModule, WasmBincodePolicyModule, WasmPairPolicyModule};
+use crate::policy::{PolicyModule, WasmBincodePolicyModule, WasmCachedBincodePolicyModule, WasmPairPolicyModule};
 
 mod policy;
 mod native_modules;
@@ -113,6 +113,15 @@ fn main() {
 
         policies.push(("WASM Bincode FiFo",wasm_bincode));
 
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_fifo.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmCachedBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("Cached WASM Bincode FiFo",wasm_bincode));
+
+
 
         policies.push(("Native GdSize",Box::new(NativePolicyModule::<GdSize<i32>,i32>::new())));
 
@@ -132,6 +141,14 @@ fn main() {
 
         policies.push(("WASM Bincode GdSize",wasm_bincode));
 
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_gdsize.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmCachedBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("Cached WASM Bincode GdSize",wasm_bincode));
+
         policies.push(("Native LRU",Box::new(NativePolicyModule::<LRU<i32>,i32>::new())));
         let wasm_bincode = {
             let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_pair_lru.wasm");
@@ -148,6 +165,14 @@ fn main() {
         };
 
         policies.push(("WASM Bincode LRU",wasm_bincode));
+
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_lru.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmCachedBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("Cached WASM Bincode LRU",wasm_bincode));
 
         policies.push(("Native LFU",Box::new(NativePolicyModule::<LFU<i32>,i32>::new())));
 
@@ -166,6 +191,15 @@ fn main() {
         };
 
         policies.push(("WASM Bincode LFU",wasm_bincode));
+
+        let wasm_bincode = {
+            let path = Path::new("./modules/wasm32-unknown-unknown/release/wasm_bincode_lfu.wasm");
+            let module = Module::from_file(&store,path).expect("Module Not Found");
+            Box::new(WasmCachedBincodePolicyModule::from_module(module))
+        };
+
+        policies.push(("Cached WASM Bincode LFU",wasm_bincode));
+
         println!("Size: {0:<10} ",size/(1024*1024));
         for (name, mut policy) in policies {
             let start = std::time::Instant::now();
@@ -175,7 +209,7 @@ fn main() {
             }
             let (total, hits) = policy.stats();
             let end = std::time::Instant::now();
-            println!("Name: {0:<20} | Hits: {1:<10} | Time: {2:<10} | Hitrate: {3:<10}", name, hits, (end-start).as_secs_f32(), hits as f32/total as f32 * 100.0);
+            println!("Name: {0:<30} | Hits: {1:<10} | Time: {2:<10} | Hitrate: {3:<10}", name, hits, (end-start).as_secs_f32(), hits as f32/total as f32 * 100.0);
         }
 
     }
