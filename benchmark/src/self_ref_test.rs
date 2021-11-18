@@ -4,13 +4,12 @@ use ouroboros::self_referencing;
 use wasmer::{Function, Instance, Module, Value, imports, Store};
 
 pub fn ouroboros_preload(store: &Store) -> Duration{
-
+    let start = std::time::Instant::now();
     let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
     let module = Module::from_file(store,path).expect("Module Not Found");
 
     let cached_self_referential = OuroborosCachedFunction::from_module(&module);
 
-    let start = std::time::Instant::now();
     let input = &[Value::I32(2), Value::I32(3)];
     for _i in 1..100_000 {
         let result = cached_self_referential.borrow_function().call(input).expect("Failed to call method: multiply");
@@ -22,12 +21,12 @@ pub fn ouroboros_preload(store: &Store) -> Duration{
 }
 
 pub fn ouroboros_hotload(store: &Store) -> Duration{
+    let start = std::time::Instant::now();
     let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
     let module = Module::from_file(store,path).expect("Module Not Found");
 
     let cached_self_referential = OuroborosCachedFunction::from_module(&module);
 
-    let start = std::time::Instant::now();
     for _i in 1..100_000 {
         let result = cached_self_referential.borrow_function().call(&[Value::I32(2), Value::I32(3)]).expect("Failed to call method: multiply");
 
