@@ -84,6 +84,7 @@ dependencies = [
  "benchmark_shared_data_structures",
  "bincode",
  "bytemuck",
+ "ouroboros",
  "packed_i32",
  "runtime",
  "wasmer",

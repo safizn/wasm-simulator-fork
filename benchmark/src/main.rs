@@ -2,6 +2,8 @@ use std::path::Path;
 use wasmer::{Store, Module, Instance, imports, Value, Function, Memory};
 use benchmark_shared_data_structures::MultiplyParams;
 
+use ouroboros::self_referencing;
+
 fn main() {
     println!("Hello, world!");
 
@@ -17,13 +19,18 @@ fn main() {
     // Prepare environment with imports
     let import_objects = imports!{};
     // Create new sandbox
-    let instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
+    let pair_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
-    let multiply = instance.exports.get_function("multiply").expect("Failed to find method: multiply");
+    let multiply = pair_instance.exports.get_function("multiply").expect("Failed to find method: multiply");
 
+    let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
+    let module = Module::from_file(&store,path).expect("Module Not Found");
+
+    let cached_self_referential = OuroborosCachedFunction::from_module(&module);
 
     let path = Path::new("./modules/wasm32-unknown-unknown/release/loop_test_module.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
+
 
     // Prepare environment with imports
     let import_objects = imports!{};
@@ -73,13 +80,78 @@ fn main() {
         results
     };
 
-    let wasm_duration_hotload = {
+    let wasm_duration_hotload_cached_wasm = {
         let mut results = vec![];
         for _j in 1..runs{
             let start = std::time::Instant::now();
             for _i in 1..100_000 {
 
                 let result = multiply.call(&[Value::I32(2), Value::I32(3)]).expect("Failed to call method: multiply");
+
+                assert_eq!(result[0], Value::I32(6));
+            }
+            let end = std::time::Instant::now();
+            results.push((end-start).as_secs_f32())
+        }
+        results
+    };
+
+    let wasm_duration_hotload_cached_self = {
+        let mut results = vec![];
+        for _j in 1..runs{
+            let start = std::time::Instant::now();
+            for _i in 1..100_000 {
+
+                let result = cached_self_referential.borrow_function().call(&[Value::I32(2), Value::I32(3)]).expect("Failed to call method: multiply");
+
+                assert_eq!(result[0], Value::I32(6));
+            }
+            let end = std::time::Instant::now();
+            results.push((end-start).as_secs_f32())
+        }
+        results
+    };
+
+    let wasm_duration_hotload = {
+        let mut results = vec![];
+        for _j in 1..runs{
+            let start = std::time::Instant::now();
+            for _i in 1..100_000 {
+                let multiply = pair_instance.exports.get_function("multiply").expect("Failed to find method: multiply");
+
+                let result = multiply.call(&[Value::I32(2), Value::I32(3)]).expect("Failed to call method: multiply");
+
+                assert_eq!(result[0], Value::I32(6));
+            }
+            let end = std::time::Instant::now();
+            results.push((end-start).as_secs_f32())
+        }
+        results
+    };
+
+    let wasm_duration_preload_cached_wasm = {
+        let mut results = vec![];
+        for _j in 1..runs{
+            let start = std::time::Instant::now();
+            let input = &[Value::I32(2), Value::I32(3)];
+            for _i in 1..100_000 {
+                let result = multiply.call(input).expect("Failed to call method: multiply");
+
+                assert_eq!(result[0], Value::I32(6));
+            }
+            let end = std::time::Instant::now();
+            results.push((end-start).as_secs_f32())
+        }
+        results
+    };
+
+    let wasm_duration_preload_cached_self = {
+        let mut results = vec![];
+        for _j in 1..runs{
+            let start = std::time::Instant::now();
+            let input = &[Value::I32(2), Value::I32(3)];
+            for _i in 1..100_000 {
+                let result = cached_self_referential.borrow_function().call(input).expect("Failed to call method: multiply");
 
                 assert_eq!(result[0], Value::I32(6));
             }
@@ -96,6 +168,8 @@ fn main() {
             let input = &[Value::I32(2), Value::I32(3)];
             for _i in 1..100_000 {
 
+                let multiply = pair_instance.exports.get_function("multiply").expect("Failed to find method: multiply");
+
                 let result = multiply.call(input).expect("Failed to call method: multiply");
 
                 assert_eq!(result[0], Value::I32(6));
@@ -106,21 +180,34 @@ fn main() {
         results
     };
 
+
     let native_average = (&native_duration.iter().fold(0.0,|acc, &num| acc + num))/ native_duration.len() as f32;
     let wasm_average_preload = (&wasm_duration_preload.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_preload.len() as f32;
     let wasm_average_hotload = (&wasm_duration_hotload.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_hotload.len() as f32;
+    let wasm_average_preload_cached = (&wasm_duration_preload_cached_wasm.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_preload_cached_wasm.len() as f32;
+    let wasm_average_hotload_cached = (&wasm_duration_hotload_cached_wasm.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_hotload_cached_wasm.len() as f32;
+    let wasm_average_preload_cached_self = (&wasm_duration_preload_cached_self.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_preload_cached_self.len() as f32;
+    let wasm_average_hotload_cached_self = (&wasm_duration_hotload_cached_self.iter().fold(0.0,|acc, &num| acc + num))/ wasm_duration_hotload_cached_self.len() as f32;
 
 
-    println!("Native: {:?} seconds \n Wasm Hotload: {:?} seconds \n Wasm Preload: {:?} seconds",
+    println!("Native: {:?} seconds \n Wasm Hotload: {:?} seconds \n Wasm Preload: {:?} seconds \n Wasm Hotload Cached: {:?} seconds \n Wasm Preload Cached: {:?} seconds \n Wasm Hotload Cached (Self-referential): {:?} seconds \n Wasm Preload Cached (Self-referential): {:?} seconds",
          native_duration,
          wasm_duration_hotload,
          wasm_duration_preload,
+        wasm_duration_hotload_cached_wasm,
+        wasm_duration_preload_cached_wasm,
+        wasm_duration_hotload_cached_self,
+        wasm_duration_preload_cached_self
     );
 
-    println!("Native Average: {:?} seconds \n Wasm Hotload Average: {:?} seconds \n Wasm Preload Average: {:?} seconds",
+    println!("Native Average: {:?} seconds \n Wasm Hotload Average: {:?} seconds \n Wasm Preload Average: {:?} seconds \n Wasm Hotload Cached Average: {:?} \n Wasm Preload Cached Average: {:?} \n Wasm Hotload Cached (Self-referential) Average: {:?} seconds \n Wasm Preload Cached (Self-referential) Average: {:?} seconds",
              native_average,
              wasm_average_hotload,
              wasm_average_preload,
+            wasm_average_hotload_cached,
+            wasm_average_preload_cached,
+            wasm_average_hotload_cached_self,
+            wasm_average_preload_cached_self
     );
 
     let many_times = {
@@ -352,6 +439,30 @@ fn call_add_test_cached(params : &MultiplyParams, struct_add : &Function, prepar
         .expect("Function call failed");
 
     assert_eq!(result[0].i32().expect("Was not i32"), params.x * params.y);
+
+}
+
+#[self_referencing]
+struct OuroborosCachedFunction {
+    module: Instance,
+    #[borrows(module)]
+    function: &'this Function
+}
+
+impl OuroborosCachedFunction {
+    fn from_module(module: &Module) -> Self{
+        // Prepare environment with imports
+        let import_objects = imports!{};
+        // Create new sandbox
+        let pair_instance = Instance::new(module, &import_objects).expect("Failed to create instance");
+
+        let builder = OuroborosCachedFunctionBuilder{
+            module: pair_instance,
+            function_builder: |module: &Instance| module.exports.get_function("multiply").expect("Failed to find method: multiply")
+        };
+        builder.build()
+
+    }
 
 }
 
