@@ -8,6 +8,7 @@ members = [
     "benchmark_modules/loop_test_module",
     "benchmark_modules/bincode_addition",
     "benchmark_modules/bytemuck_addition",
+    "benchmark_modules/bytemuck_addition_fixed",
     "benchmark_shared_data_structures",
     "shared_crates/packed_i32",
     "shared_crates/algorithm",
