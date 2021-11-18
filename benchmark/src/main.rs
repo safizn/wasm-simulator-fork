@@ -1,17 +1,57 @@
+use std::collections::HashMap;
+use std::iter::Map;
 use std::path::Path;
+use std::time::Duration;
 use wasmer::{Store, Module, Instance, imports, Value, Function, Memory};
 use benchmark_shared_data_structures::MultiplyParams;
 
-use ouroboros::self_referencing;
+mod self_ref_test;
+mod native_test;
+
+struct Report {
+    name : String,
+    average : f64,
+    standard_dev: f64,
+}
 
 fn main() {
     println!("Hello, world!");
 
+    let mut benchmarks: HashMap<String, fn(&Store) -> Duration> = HashMap::<String, fn(&Store) -> Duration>::new();
 
+    benchmarks.insert("Pair, Preload, Self-referential Struct".to_string(), self_ref_test::ouroboros_preload);
+    benchmarks.insert("Pair, Hotload, Self-referential Struct".to_string(), self_ref_test::ouroboros_hotload);
+
+
+    let runs = 100;
+
+    let store = Store::default();
+
+    let results : Vec<Report> = benchmarks.iter().map(|(name, func)|{
+
+        let mut times : Vec<Duration> = vec![];
+
+        for _ in 0..runs {
+            let time = func(&store);
+            times.push(time)
+        }
+
+        let average = (times.iter().fold(0.0,|acc, &num| acc + num.as_secs_f64()))/ runs as f64;
+
+        Report{
+            name: name.clone(),
+            average,
+            standard_dev: 0.0
+        }
+    }).collect();
+
+    for r in results {
+        println!("Benchmark: {:?} Average: {:?} Standard Dev: {:?}", r.name, r.average, r.standard_dev)
+    }
 
     // load method from module (basically get function pointer)
 
-    let store = Store::default();
+
     println!("{:?}",std::env::current_dir());
     let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
@@ -22,11 +62,6 @@ fn main() {
     let pair_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
     let multiply = pair_instance.exports.get_function("multiply").expect("Failed to find method: multiply");
-
-    let path = Path::new("./modules/wasm32-unknown-unknown/release/testModule.wasm");
-    let module = Module::from_file(&store,path).expect("Module Not Found");
-
-    let cached_self_referential = OuroborosCachedFunction::from_module(&module);
 
     let path = Path::new("./modules/wasm32-unknown-unknown/release/loop_test_module.wasm");
     let module = Module::from_file(&store,path).expect("Module Not Found");
@@ -63,7 +98,6 @@ fn main() {
     // Create new sandbox
     let bytemuck_add_instance_fixed = Instance::new(&module, &import_objects).expect("Failed to create instance");
 
-    let runs = 100;
 
     let native_duration = {
         let mut results = vec![];
@@ -99,15 +133,8 @@ fn main() {
     let wasm_duration_hotload_cached_self = {
         let mut results = vec![];
         for _j in 1..runs{
-            let start = std::time::Instant::now();
-            for _i in 1..100_000 {
-
-                let result = cached_self_referential.borrow_function().call(&[Value::I32(2), Value::I32(3)]).expect("Failed to call method: multiply");
-
-                assert_eq!(result[0], Value::I32(6));
-            }
-            let end = std::time::Instant::now();
-            results.push((end-start).as_secs_f32())
+            let dur = self_ref_test::ouroboros_hotload(&store);
+            results.push((dur).as_secs_f32())
         }
         results
     };
@@ -148,15 +175,8 @@ fn main() {
     let wasm_duration_preload_cached_self = {
         let mut results = vec![];
         for _j in 1..runs{
-            let start = std::time::Instant::now();
-            let input = &[Value::I32(2), Value::I32(3)];
-            for _i in 1..100_000 {
-                let result = cached_self_referential.borrow_function().call(input).expect("Failed to call method: multiply");
-
-                assert_eq!(result[0], Value::I32(6));
-            }
-            let end = std::time::Instant::now();
-            results.push((end-start).as_secs_f32())
+            let dur = self_ref_test::ouroboros_preload(&store);
+            results.push(dur.as_secs_f32())
         }
         results
     };
@@ -442,27 +462,5 @@ fn call_add_test_cached(params : &MultiplyParams, struct_add : &Function, prepar
 
 }
 
-#[self_referencing]
-struct OuroborosCachedFunction {
-    module: Instance,
-    #[borrows(module)]
-    function: &'this Function
-}
 
-impl OuroborosCachedFunction {
-    fn from_module(module: &Module) -> Self{
-        // Prepare environment with imports
-        let import_objects = imports!{};
-        // Create new sandbox
-        let pair_instance = Instance::new(module, &import_objects).expect("Failed to create instance");
-
-        let builder = OuroborosCachedFunctionBuilder{
-            module: pair_instance,
-            function_builder: |module: &Instance| module.exports.get_function("multiply").expect("Failed to find method: multiply")
-        };
-        builder.build()
-
-    }
-
-}
 
