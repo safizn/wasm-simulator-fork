@@ -1,17 +1,18 @@
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use algorithm::CacheAlgorithm;
-use fifo::FiFo;
+use lru::LRU;
+
 use simulator_shared_types::FileRecord;
 
 
-static POLICY : Lazy<Mutex<Option<FiFo<i32>>>> = Lazy::new(||{
+static POLICY : Lazy<Mutex<Option<LRU<i32>>>> = Lazy::new(||{
     Mutex::new(None)
 });
 
 #[no_mangle]
 pub fn init(size: i64){
-    *POLICY.lock().unwrap() = Some(FiFo::<i32>::new(size));
+    *POLICY.lock().unwrap() = Some(LRU::<i32>::new(size));
 }
 
 static mut BUFFER : [u8; std::mem::size_of::<FileRecord<i32>>()] = [0; std::mem::size_of::<FileRecord<i32>>()];

@@ -469,6 +469,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69ddb889f9d0d08a67338271fa9b62996bc788c7796a5c18cf057420aaed5eaf"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -956,6 +965,7 @@ dependencies = [
  "fifo",
  "flate2",
  "gdsize",
+ "itertools",
  "lfu",
  "lru",
  "ouroboros",
@@ -970,6 +980,7 @@ name = "simulator_shared_types"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "bytemuck",
  "serde",
 ]
 
@@ -1236,8 +1247,50 @@ dependencies = [
 name = "wasm_c_fifo"
 version = "0.1.0"
 dependencies = [
+ "algorithm",
+ "bytemuck",
  "console_error_panic_hook",
  "fifo",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_c_gdsize"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bytemuck",
+ "console_error_panic_hook",
+ "gdsize",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_c_lfu"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bytemuck",
+ "console_error_panic_hook",
+ "lfu",
+ "once_cell",
+ "packed_i32",
+ "simulator_shared_types",
+]
+
+[[package]]
+name = "wasm_c_lru"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "bytemuck",
+ "console_error_panic_hook",
+ "lru",
+ "once_cell",
  "packed_i32",
  "simulator_shared_types",
 ]

@@ -58,6 +58,9 @@
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wasmer-compiler-cranelift-0adff072878cdecf/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wasmer-vm-717f93f2b381eeed/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/winapi-f34d1db171c86f7f/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_gdsize/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lfu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lru/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

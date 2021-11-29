@@ -1,5 +1,5 @@
 [package]
-name = "wasm_c_fifo"
+name = "wasm_c_lfu"
 version = "0.1.0"
 edition = "2018"
 
@@ -20,7 +20,7 @@ default = ["console_error_panic_hook"]
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.6", optional = true }
-fifo = {path = "../../../algorithms/fifo" }
+lfu = {path = "../../../algorithms/lfu" }
 packed_i32 = {path = "../../../shared_crates/packed_i32" }
 simulator_shared_types = {path = "../../../simulator_shared_types"}
 algorithm = {path = "../../../shared_crates/algorithm"}
