@@ -30,5 +30,6 @@ fn main(){
         if _result.code().unwrap() != 0 {
             panic!("Compilation error for module: {}", module)
         }
+
     }
 }

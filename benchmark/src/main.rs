@@ -1,6 +1,7 @@
 
 use std::path::Path;
 use std::time::Duration;
+use plotters::prelude::*;
 use wasmer::{Store, Module, Instance, imports, Value};
 use benchmark_shared_data_structures::MultiplyParams;
 
@@ -8,7 +9,9 @@ mod self_ref_test;
 mod native_test;
 mod pair_test;
 mod bincode_test;
+mod bytemuck_test;
 
+#[derive(Clone)]
 struct Report {
     name : String,
     average : f64,
@@ -26,9 +29,12 @@ fn main() {
     benchmarks.push(("Pair, Hotload, Cached".to_string(),pair_test::pair_hotload_cached));
     benchmarks.push(("Pair, Preload, Self-referential Struct".to_string(), self_ref_test::ouroboros_preload));
     benchmarks.push(("Pair, Hotload, Self-referential Struct".to_string(), self_ref_test::ouroboros_hotload));
-    benchmarks.push(("Pair, WASM Loop".to_string(), pair_test::multiply_many_test));
     benchmarks.push(("Bincode".to_string(),bincode_test::bincode_test));
     benchmarks.push(("Bincode, Cached".to_string(),bincode_test::bincode_cached));
+    benchmarks.push(("Bytemuck".to_string(),bytemuck_test::bytemuck_test));
+    benchmarks.push(("Bytemuck, Cached".to_string(),bytemuck_test::bytemuck_cached_test));
+    benchmarks.push(("Bytemuck, Fixed".to_string(),bytemuck_test::bytemuck_fixed_test));
+    benchmarks.push(("Bytemuck, Fixed, Cached".to_string(),bytemuck_test::bytemuck_cached_fixed_test));
 
     let runs = 1000;
 
@@ -57,146 +63,51 @@ fn main() {
         }
     }).collect();
 
-    for r in results {
+    for r in results.clone() {
         println!("Benchmark: {:?} Average: {:?} Standard Dev: {:?}", r.name, r.average, r.standard_dev)
     }
 
-    let path = Path::new("./modules/wasm32-unknown-unknown/release/bytemuck_addition.wasm");
-    let module = Module::from_file(&store,path).expect("Module Not Found");
-
-    // Prepare environment with imports
-    let import_objects = imports!{};
-    // Create new sandbox
-    let bytemuck_add_instance = Instance::new(&module, &import_objects).expect("Failed to create instance");
-
-    let path = Path::new("./modules/wasm32-unknown-unknown/release/bytemuck_addition_fixed.wasm");
-    let module = Module::from_file(&store,path).expect("Module Not Found");
-
-    // Prepare environment with imports
-    let import_objects = imports!{};
-    // Create new sandbox
-    let bytemuck_add_instance_fixed = Instance::new(&module, &import_objects).expect("Failed to create instance");
-
-    let duration  = {
-        let start = std::time::Instant::now();
-        let params = MultiplyParams {
-            x : 2,
-            y : 3
+    {
+        let mode = if cfg!(debug_assertions){
+            "Debug"
+        } else {
+            "Release"
         };
-        for _ in 0..100_000{
-            call_add_test_muck(params, &bytemuck_add_instance)
+
+        let colors: Vec<RGBColor> = vec![BLACK,RED,GREEN,BLUE,YELLOW,MAGENTA,CYAN,BLACK,RED,GREEN,BLUE,YELLOW,MAGENTA,CYAN,];
+        let path = format!("bench_results/test_{}.png",mode);
+        let path = Path::new(path.as_str());
+        let root = BitMapBackend::new(path,(600,400)).into_drawing_area();
+
+        root.fill(&WHITE);
+
+        let caption = format!("Micro Benchmarks - {}",mode);
+
+        let mut chart = ChartBuilder::on(&root)
+            .set_all_label_area_size(50)
+            .caption(caption.as_str(), ("sans-serif",30.0))
+            .build_cartesian_2d(0u32..(results.len() as u32),0f64..0.06f64)
+            .unwrap();
+
+        &chart.configure_mesh()
+            .y_desc("Average Runtime (s)")
+            .draw().unwrap();
+
+        for (i,(r,c)) in results.into_iter().zip(colors).enumerate() {
+
+            let c = c.clone();
+
+            chart.draw_series(
+                vec![r].into_iter().map(|r|{
+                    Rectangle::new([(i as u32,0f64),((i+1) as u32,r.average)], c.mix(0.5).filled() )
+                })
+            ).unwrap().legend(move |(x,y)| PathElement::new(vec![(x,y),(x+20,y)], c.mix(0.5).filled()));
         }
-        let end = std::time::Instant::now();
-        end-start
-    };
-    println!("Bytes Struct addition: {}",duration.as_secs_f32());
 
-
-
-    let duration  = {
-        let start = std::time::Instant::now();
-
-        let (ptr, len) =  packed_i32::split_i64_to_i32(bytemuck_add_instance_fixed.exports.get_function("wasm_get_buffer").unwrap().call(&[]).unwrap()[0].i64().unwrap());
-
-        let params = MultiplyParams {
-            x : 2,
-            y : 3
-        };
-        for _ in 0..100_000{
-            call_add_test_muck_fixed(params, &bytemuck_add_instance_fixed, ptr as usize, len as usize)
-        }
-        let end = std::time::Instant::now();
-        end-start
-    };
-    println!("Bytes Struct addition (Fixed Memory): {}",duration.as_secs_f32());
-
-
-    let duration  = {
-        let start = std::time::Instant::now();
-
-        let (ptr, len) =  packed_i32::split_i64_to_i32(bytemuck_add_instance_fixed.exports.get_function("wasm_get_buffer").unwrap().call(&[]).unwrap()[0].i64().unwrap());
-
-        let struct_add = bytemuck_add_instance_fixed
-            .exports
-            .get_function("struct_add")
-            .expect("Could not find function struct_add");
-
-        let mem = bytemuck_add_instance_fixed.exports.get_memory("memory").expect("Could not get memory");
-
-        let mparams = MultiplyParams {
-            x : 2,
-            y : 3
-        };
-        for _ in 0..100_000{
-
-
-            let expected = mparams.x * mparams.y;
-
-            runtime::write_bytemuck_to_wasm_memory(mparams, mem, ptr as usize, len as usize);
-
-            // Now, call the method
-            let result = struct_add.call(&[Value::I32(ptr),Value::I32(len)])
-                .expect("Function call failed");
-
-            assert_eq!(result[0].i32().expect("Was not i32"), expected);
-        }
-        let end = std::time::Instant::now();
-        end-start
-    };
-    println!("Bytes Struct addition (Fixed Memory, Cached WASM reference): {}",duration.as_secs_f32());
-
+        root.present().unwrap()
+    }
 }
 
-fn call_add_test_muck_fixed(params : MultiplyParams, instance : &Instance, ptr : usize, len: usize){
-    let mem = instance.exports.get_memory("memory").expect("Could not get memory");
 
-    let expected = params.x * params.y;
 
-    runtime::write_bytemuck_to_wasm_memory(params, mem, ptr, len);
 
-    // Now, call the method
-    let struct_add = instance
-        .exports
-        .get_function("struct_add")
-        .expect("Could not find function struct_add");
-
-    let result = struct_add.call(&[Value::I32(ptr as i32),Value::I32(len as i32)])
-        .expect("Function call failed");
-
-    assert_eq!(result[0].i32().expect("Was not i32"), expected);
-
-}
-
-fn call_add_test_muck(params : MultiplyParams, instance : &Instance ){
-    let buffer_size = std::mem::size_of::<MultiplyParams>();
-
-    //println!("BUFFER_SIZE: {}", buffer_size);
-    let prepare_buffer_fuc = instance
-        .exports
-        .get_function("wasm_prepare_buffer")
-        .expect("No such function");
-
-    let result = prepare_buffer_fuc.call(&[Value::I32(buffer_size as i32)]).expect("Function call failed");
-
-    let compressed_nums = result[0].i64().expect("Was not i64");
-
-    let (ptr, len) = packed_i32::split_i64_to_i32(compressed_nums);
-
-    let mem = instance.exports.get_memory("memory").expect("Could not get memory");
-
-    let expected = params.x * params.y;
-
-    runtime::write_bytemuck_to_wasm_memory(params, mem, ptr as usize, len as usize);
-
-    // Now, call the method
-    let struct_add = instance
-        .exports
-        .get_function("struct_add")
-        .expect("Could not find function struct_add");
-
-    let result = struct_add.call(&[Value::I32(ptr),Value::I32(len)])
-        .expect("Function call failed");
-
-    assert_eq!(result[0].i32().expect("Was not i32"), expected);
-
-}

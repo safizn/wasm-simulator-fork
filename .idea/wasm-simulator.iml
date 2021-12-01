@@ -61,6 +61,12 @@
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_gdsize/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-integer-b72d82b463b31e5b/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-iter-decb7746491e15a0/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-rational-7a05fe98b6c1d516/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-traits-07d7de36ce94acdd/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/pathfinder_simd-6b08aee3f0fb6703/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/winapi-a90d3912f2207c88/out" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

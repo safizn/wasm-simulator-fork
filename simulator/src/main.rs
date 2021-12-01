@@ -7,7 +7,7 @@ use std::path::Path;
 use std::str::FromStr;
 use std::time::Duration;
 
-use itertools::{GroupBy, Itertools};
+use itertools::{Group, GroupBy, Itertools};
 
 use clap::{App, Arg};
 use wasmer::{Module, Store};
@@ -24,6 +24,7 @@ mod policy;
 mod native_modules;
 mod cached_policy;
 
+use plotters::prelude::*;
 
 
 fn main() {
@@ -297,7 +298,7 @@ fn main() {
             let a = SimResult{
                 size: size,
                 alg: alg_string,
-                name: name.parse().unwrap(),
+                name: name,
                 hits: hits,
                 time: (end-start).as_secs_f64(),
                 hitrate: (hits as f32/total as f32 * 100.0)
@@ -309,9 +310,7 @@ fn main() {
 
     }
 
-    let grouped_size = &results.into_iter().group_by(|a| a.size);
-
-    for (key,group) in grouped_size{
+    for (key,group) in &results.clone().into_iter().group_by(|a| a.size){
         println!("Size: {0:<10} ",key/(1024*1024));
         for a in group{
             println!("Name: {0:<30} | Hits: {1:<10} | Time: {2:<10} | Hitrate: {3:<10}", a.name, a.hits,a.time, a.hitrate);
@@ -320,8 +319,97 @@ fn main() {
     }
 
 
+    let mode = if cfg!(debug_assertions){
+        "Debug"
+    } else {
+        "Release"
+    };
+
+
+
+    let colors: Vec<RGBColor> = vec![BLACK,RED,GREEN,BLUE,YELLOW,MAGENTA,CYAN,BLACK];
+
+    for (size,group) in &results.clone().into_iter().group_by(|a| a.size){
+
+        let group : Vec<SimResult> = group.into_iter().collect();
+        let file = format!("result_graphs/test_{}_{}.png", size/(1024*1024),mode);
+        let file = Path::new(file.as_str());
+        let root = BitMapBackend::new(file, (600, 400)).into_drawing_area();
+
+        root.fill(&WHITE);
+
+        let x_spec =(0u32..((group.len() + 4) as u32)).with_key_points(
+            vec![4,11,18,25]
+        );
+        //let x_text_spec = plotters::prelude::ToGroupByRange::group_by(0u32..(group.len() as u32), 6).into_segmented();
+
+
+        let caption = format!("Simulation Runtimes ({}) - {} MB", mode ,size/(1024*1024));
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(35)
+            .y_label_area_size(40)
+            .caption(caption.as_str(),("sans-serif",30.0))
+            .build_cartesian_2d(x_spec, 0f64..1f64)
+            .unwrap();
+
+        &chart.configure_mesh()
+            .x_labels(4)
+            .x_label_formatter(&|x| {
+
+                match x / 6u32 {
+                    0 => "FiFo",
+                    1 => "GdSize",
+                    2 => "LRU",
+                    3 => "LFU",
+                    4 => "LFU",
+                    _ => {"E"}
+                }.to_string()
+            })
+            .x_desc("Caching Policy")
+            .y_desc("Runtime (s)")
+            .draw().unwrap();
+
+
+        let by_alg = group.into_iter().group_by(|a| a.alg);
+
+
+        for (group,(_,i)) in by_alg.into_iter().enumerate(){
+
+
+            let i = i.map(|b| b.time);
+
+
+            let blank = std::iter::once(0.0); // blank column for spacer
+
+            let data = blank
+                .chain(i).enumerate().zip(colors.clone())
+                .map(|((a,b),color)| (((group as u32)*7+a as u32,b),color)); // re-wrap data columns from structs to raw pair (might not be needed)
+
+            // Combine and map to rectangles
+            let rects = data.map(|((a,b),color)|{
+                Rectangle::new([(a,0f64),(a+1,b)],color.mix(0.5).filled())
+            });
+
+            // create blank column to insert at start to separate groups
+
+            if group == 0 {
+                chart.draw_series(rects).unwrap().label("");
+            } else {
+                chart.draw_series(rects);
+            }
+
+
+        }
+
+
+
+        root.present().unwrap();
+    }
+
+
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
 enum Alg{
     Fifo,
     GdSize,
@@ -329,10 +417,11 @@ enum Alg{
     LRU
 }
 
+#[derive(Clone, Copy)]
 struct SimResult{
     size: i64,
     alg: Alg,
-    name: String,
+    name: &'static str,
     hits: i32,
     time: f64,
     hitrate: f32
