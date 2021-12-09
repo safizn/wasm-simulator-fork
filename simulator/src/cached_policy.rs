@@ -19,6 +19,17 @@ pub struct WasmCachedBincodePolicyModule{
 }
 
 #[self_referencing]
+pub struct WasmCachedPairPolicyModule{
+    module : Instance,
+    #[borrows(module)]
+    send: &'this Function,
+    #[borrows(module)]
+    init: &'this Function,
+    #[borrows(module)]
+    stats: &'this Function,
+}
+
+#[self_referencing]
 pub struct WasmCachedBytemuckPolicyModule{
     module : Instance,
     ptr: usize,
@@ -33,6 +44,41 @@ pub struct WasmCachedBytemuckPolicyModule{
     init: &'this Function,
     #[borrows(module)]
     stats: &'this Function,
+}
+
+impl WasmCachedPairPolicyModule {
+
+    pub fn from_module(module : Module) -> Self {
+        let import_objects = imports!{};
+        // Create new sandbox
+        let module = Instance::new(&module, &import_objects).unwrap();
+        let _send = module.exports.get_function("send").unwrap();
+        let _init = module.exports.get_function("init").unwrap();
+        let _init = module.exports.get_function("stats").unwrap();
+
+        let out = WasmCachedPairPolicyModuleBuilder {
+            module,
+            send_builder: |module: &Instance| module.exports.get_function("send").unwrap(),
+            init_builder: |module: &Instance| module.exports.get_function("init").unwrap(),
+            stats_builder: |module: &Instance| module.exports.get_function("stats").unwrap(),
+        };
+        out.build()
+    }
+}
+
+impl PolicyModule<i32> for WasmCachedPairPolicyModule {
+    fn initialize(&mut self, cache_size: i64) {
+        self.borrow_init().call(&[Val::I64(cache_size)]).unwrap();
+    }
+    fn send_request(&mut self, request : FileRecord<i32>){
+        self.borrow_send().call(&[Val::I32(request.label),Val::I64(request.size)]).unwrap();
+    }
+
+    fn stats(&self) -> (i32, i32) {
+        let result = self.borrow_stats().call(&[]).unwrap();
+        let packed = result[0].i64().unwrap();
+        packed_i32::split_i64_to_i32(packed)
+    }
 }
 
 impl WasmCachedBincodePolicyModule {

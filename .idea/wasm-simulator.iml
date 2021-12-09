@@ -61,11 +61,19 @@
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_gdsize/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lfu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sim_modules/wasm_c_struct/wasm_c_lru/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/ahash-6b542dc5a714f7cf/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/bytecheck-588f29b0c6ee6820/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/cranelift-codegen-154b5950edb349f0/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/indexmap-54b75c5c2ca909a6/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-integer-b72d82b463b31e5b/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-iter-decb7746491e15a0/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-rational-7a05fe98b6c1d516/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/num-traits-07d7de36ce94acdd/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/pathfinder_simd-6b08aee3f0fb6703/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/rend-2a4e2e3c45acac5c/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/rkyv-0f0b466f1c6c1309/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wasmer-compiler-cranelift-69971d336617e69b/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wasmer-vm-80139623b8350fdf/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/winapi-a90d3912f2207c88/out" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

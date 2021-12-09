@@ -33,8 +33,8 @@ fn main() {
     benchmarks.push(("Bincode, Cached".to_string(),bincode_test::bincode_cached));
     benchmarks.push(("Bytemuck".to_string(),bytemuck_test::bytemuck_test));
     benchmarks.push(("Bytemuck, Cached".to_string(),bytemuck_test::bytemuck_cached_test));
-    benchmarks.push(("Bytemuck, Fixed".to_string(),bytemuck_test::bytemuck_fixed_test));
-    benchmarks.push(("Bytemuck, Fixed, Cached".to_string(),bytemuck_test::bytemuck_cached_fixed_test));
+    benchmarks.push(("Bytemuck, Static".to_string(),bytemuck_test::bytemuck_fixed_test));
+    benchmarks.push(("Bytemuck, Static, Cached".to_string(),bytemuck_test::bytemuck_cached_fixed_test));
 
     let runs = 1000;
 
@@ -74,19 +74,57 @@ fn main() {
             "Release"
         };
 
-        let colors: Vec<RGBColor> = vec![BLACK,RED,GREEN,BLUE,YELLOW,MAGENTA,CYAN,BLACK,RED,GREEN,BLUE,YELLOW,MAGENTA,CYAN,];
+        const D_YELLOW : RGBColor = RGBColor{
+            0: 185,
+            1: 185,
+            2: 0
+        };
+
+        const D_GREEN : RGBColor = RGBColor{
+            0: 0,
+            1: 185,
+            2: 0
+        };
+
+        const DR_YELLOW : RGBColor = RGBColor{
+            0: 100,
+            1: 100,
+            2: 0
+        };
+
+        let stroke = 10;
+
+        let colors: Vec<ShapeStyle> = vec![BLACK.filled(),
+                                         YELLOW.mix(0.7).filled(),
+                                         YELLOW.mix(0.4).filled(),
+                                         D_YELLOW.mix(0.7).filled(),
+                                         D_YELLOW.mix(0.4).filled(),
+                                         DR_YELLOW.mix(0.7).filled(),
+                                         DR_YELLOW.mix(0.4).filled(),
+                                         BLUE.mix(0.7).filled(),
+                                         BLUE.mix(0.4).filled(),
+                                         GREEN.mix(0.7).filled(),
+                                         GREEN.mix(0.4).filled(),
+                                         D_GREEN.mix(0.7).filled(),
+                                         D_GREEN.mix(0.4).filled(), ];
         let path = format!("bench_results/test_{}.png",mode);
         let path = Path::new(path.as_str());
-        let root = BitMapBackend::new(path,(600,400)).into_drawing_area();
+        let root = BitMapBackend::new(path,(800,600)).into_drawing_area();
 
         root.fill(&WHITE);
 
         let caption = format!("Micro Benchmarks - {}",mode);
 
+        let y_spec = if cfg!(debug_assertions){
+            0f64..1f64
+        } else {
+            0f64..0.06f64
+        };
+
         let mut chart = ChartBuilder::on(&root)
             .set_all_label_area_size(50)
             .caption(caption.as_str(), ("sans-serif",30.0))
-            .build_cartesian_2d(0u32..(results.len() as u32),0f64..0.06f64)
+            .build_cartesian_2d(0u32..(results.len() as u32),y_spec)
             .unwrap();
 
         &chart.configure_mesh()
@@ -96,13 +134,20 @@ fn main() {
         for (i,(r,c)) in results.into_iter().zip(colors).enumerate() {
 
             let c = c.clone();
+            let name = r.name.clone();
 
             chart.draw_series(
                 vec![r].into_iter().map(|r|{
-                    Rectangle::new([(i as u32,0f64),((i+1) as u32,r.average)], c.mix(0.5).filled() )
+                    Rectangle::new([(i as u32,0f64),((i+1) as u32,r.average)], c.clone())
                 })
-            ).unwrap().legend(move |(x,y)| PathElement::new(vec![(x,y),(x+20,y)], c.mix(0.5).filled()));
+            ).unwrap().label(name).legend(move |(x,y)| Rectangle::new([(x, y-5), (x + 20, y+5)], c.clone()));
         }
+
+        chart.configure_series_labels()
+            .border_style(&BLACK)
+            .background_style(&WHITE)
+            .position(SeriesLabelPosition::UpperLeft)
+            .draw().unwrap();
 
         root.present().unwrap()
     }

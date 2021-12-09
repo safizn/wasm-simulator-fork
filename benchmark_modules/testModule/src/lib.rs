@@ -9,7 +9,8 @@ mod tests {
 }
 
 // Basic function call using WASM native types
-#[no_mangle] // Tells rustc not to mangle the symbol, required for host to find method
+#[no_mangle]
+// Tells rustc not to mangle the symbol, required for host to find method
 pub fn multiply(x : i32, y :i32 ) -> i32 {
     return x * y
 }
