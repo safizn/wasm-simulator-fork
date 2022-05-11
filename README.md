@@ -1,3 +1,3 @@
 # wasm-simulator
 
-WebAssembly based caching policy simulator for CPSC 503
+WebAssembly based caching policy simulator for benchmarking Wasmer
