@@ -36,7 +36,7 @@ fn main() {
     benchmarks.push(("Bytemuck, Static".to_string(),bytemuck_test::bytemuck_fixed_test));
     benchmarks.push(("Bytemuck, Static, Cached".to_string(),bytemuck_test::bytemuck_cached_fixed_test));
 
-    let runs = 1000;
+    let runs = 5;
 
     let store = Store::default();
 
